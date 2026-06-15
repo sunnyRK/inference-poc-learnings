@@ -1,6 +1,8 @@
-# 07 — POC2 Plan & Hypotheses (Concurrent Requests)
+# 07 — POC2 Learnings (Concurrent Requests)
 
-> ⏳ **Status: NOT YET BUILT.** This is the design + hypotheses doc we write *before* coding, so we can compare predictions against reality. Results will be filled in when we build POC2 together. (Writing hypotheses first is how you actually learn — it forces a mental model you can be wrong about.)
+> ✅ **Status: BUILT & MEASURED.** Code in [`../POC2-concurrent-requests`](../POC2-concurrent-requests). This doc keeps the *pre-registered* hypotheses (written before coding) and then scores them against the real numbers at the bottom — that pre-registration is how you actually learn, because it forces a mental model you can be proven wrong about.
+
+> **TL;DR of the result:** throughput stayed **flat (~29 tok/s)** from 1→8 concurrent users while latency climbed **linearly** (p50 2.7s → 11.1s). Naive serving *serializes* work — exactly the problem continuous batching solves.
 
 ## The question POC2 answers
 
@@ -78,21 +80,31 @@ If the hypotheses hold, POC2 *proves by measurement* that naive serving doesn't 
 
 ---
 
-## Results (to be filled in)
+## Results (measured — Apple M4, 16GB, Qwen2.5-3B, 8 req/level)
 
 ```
 Concurrency │ Throughput (tok/s) │ p50 latency │ p95 latency │ p99 latency
 ────────────┼────────────────────┼─────────────┼─────────────┼────────────
-     1      │        TBD         │     TBD     │     TBD     │    TBD
-     2      │        TBD         │     TBD     │     TBD     │    TBD
-     4      │        TBD         │     TBD     │     TBD     │    TBD
-     8      │        TBD         │     TBD     │     TBD     │    TBD
-    16      │        TBD         │     TBD     │     TBD     │    TBD
-    32      │        TBD         │     TBD     │     TBD     │    TBD
+     1      │       28.3         │   2.72 s    │   2.95 s    │   3.00 s
+     2      │       29.9         │   4.50 s    │   5.51 s    │   5.63 s
+     4      │       30.1         │   8.92 s    │   9.32 s    │   9.40 s
+     8      │       28.9         │  11.14 s    │  18.18 s    │  18.40 s
 ```
 
-**Saturation point:** _TBD_
-**Verdict on hypotheses:** _TBD_
+**Saturation point:** immediate — throughput never meaningfully rose. Peak was 30.1 tok/s at concurrency 4 = **1.06× the single-stream baseline** (i.e. no real gain). The system is saturated at concurrency 1.
+
+### Verdict on hypotheses
+
+| # | Hypothesis | Verdict | Notes |
+|---|-----------|---------|-------|
+| H1 | Throughput rises then plateaus | ⚠️ **Partial** | It plateaued *immediately* — there was no meaningful rise at all (1.06× peak). Stronger result than predicted: naive serving gives ~zero throughput scaling. |
+| H2 | Per-request latency degrades ~linearly | ✅ **Confirmed** | p50: 2.72 → 4.50 → 8.92 → 11.14s, ~doubling each time concurrency doubled. Textbook queueing. |
+| H3 | Per-request tok/s drops under load | ✅ **Confirmed** | Aggregate flat ⇒ each request's share of the ~30 tok/s pie halves as users double. |
+| H4 | p99 blows up faster than p50 | ✅ **Confirmed** | At C=8, p50=11.1s but p99=18.4s — the tail spread widened sharply vs lower levels. |
+| H5 | 16GB memory caps concurrency | ❌ **Not observed** | Zero failures at C=8; we were bound by **scheduling/bandwidth serialization**, not memory. Memory would bite at much higher concurrency or longer contexts. |
+
+### The one sentence to remember
+> Adding concurrent users to a naive server **did not add throughput — it only added waiting.** The throughput line is flat because a single GPU's decode bandwidth is shared, not multiplied, without real batching. That flat line is precisely what continuous batching (vLLM) turns into a 10–24× rising line.
 
 ---
 
