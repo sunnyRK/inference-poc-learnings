@@ -13,7 +13,7 @@ Every POC ships with: **runnable code · README · architecture diagram · real 
 | # | POC | Concept | Status |
 |---|-----|---------|--------|
 | 1 | [Local Inference Server](./POC1-local-inference-server) | Serving basics, instrumentation, latency/throughput measurement | ✅ Done |
-| 2 | Concurrent Requests | Throughput, concurrency, saturation, tail latency | 🔜 Next |
+| 2 | [Concurrent Requests](./POC2-concurrent-requests) | Throughput, concurrency, saturation, tail latency | ✅ Done |
 | 3 | Streaming Inference | TTFT, token streaming, perceived latency | ⬜ Planned |
 | 4 | LLM Gateway | Routing, rate limiting, multi-model serving | ⬜ Planned |
 | 5 | Response Cache | Exact-match caching, cost reduction | ⬜ Planned |
@@ -59,18 +59,28 @@ inference-poc-learnings/
 │   ├── benchmark.py
 │   ├── requirements.txt
 │   └── README.md
-└── (POC2, POC3, ... added as built)
+├── POC2-concurrent-requests/       ← threaded load test, p50/p95/p99
+│   ├── load_test.py
+│   ├── requirements.txt
+│   └── README.md
+└── (POC3, POC4, ... added as built)
 ```
 
 Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchmark.
 
 ---
 
-## 🔑 Highlights so far (from POC1)
+## 🔑 Highlights so far
 
+**POC1 — baseline:**
 - Built an **instrumented** FastAPI inference server over Ollama/Qwen2.5-3B that reports latency, prompt/output token counts, and tokens/sec on every request.
 - Measured on Apple M4: **~32 tok/s decode ceiling**, **~3s cold-start tax**, and confirmed **latency scales linearly with output tokens** while tokens/sec stays flat (the KV cache working underneath).
-- Decomposed warm latency into **~90% decode + ~10% serving overhead**, establishing the baseline that batching/streaming/caching will improve.
+- Decomposed warm latency into **~90% decode + ~10% serving overhead**.
+
+**POC2 — concurrency:**
+- Built a threaded load generator and swept concurrency 1→8, reporting throughput + p50/p95/p99.
+- **Measured the failure mode of naive serving:** throughput stayed **flat (~29 tok/s)** while latency climbed **linearly** (p50 2.7s → 11.1s) and the **tail blew up** (p99 18.4s at C=8).
+- Pre-registered 5 hypotheses before coding and scored them against reality — proving *why* continuous-batching engines (vLLM) exist, with my own numbers.
 
 ---
 
