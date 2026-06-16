@@ -37,7 +37,8 @@ Concept write-ups (mentor-style, with diagrams and production connections). Read
 | [04 — KV Cache](./notes/04-kv-cache.md) | The optimization that makes generation affordable; PagedAttention & prefix caching |
 | [05 — Batching](./notes/05-batching.md) | Why batching is ~free, static vs **continuous batching** |
 | [06 — POC1 Learnings](./notes/06-poc1-learnings.md) | Real M4 numbers: cold start, decode ceiling, latency decomposition |
-| [07 — POC2 Plan](./notes/07-poc2-learnings.md) | Hypotheses for the concurrency benchmark (pre-registered) |
+| [07 — POC2 Learnings](./notes/07-poc2-learnings.md) | Concurrency results: flat throughput, linear latency, tail blowup |
+| [08 — Understanding the Numbers](./notes/08-understanding-the-numbers.md) | Beginner guide: latency, throughput, p50/p95/p99 — with simple math |
 
 ---
 
