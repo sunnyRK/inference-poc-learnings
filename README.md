@@ -40,6 +40,7 @@ Concept write-ups (mentor-style, with diagrams and production connections). Read
 | [07 — POC2 Learnings](./notes/07-poc2-learnings.md) | Concurrency results: flat throughput, linear latency, tail blowup |
 | [08 — Understanding the Numbers](./notes/08-understanding-the-numbers.md) | Beginner guide: latency, throughput, p50/p95/p99 — with simple math |
 | [09 — Streaming & TTFT](./notes/09-streaming-and-ttft.md) | Beginner guide: why streaming feels ~9x faster (Time To First Token) |
+| [10 — Glossary](./notes/10-glossary.md) | Plain-English definitions of inference terms, mapped to backend ideas |
 
 ---
 
