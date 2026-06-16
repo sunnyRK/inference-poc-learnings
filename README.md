@@ -15,7 +15,7 @@ Every POC ships with: **runnable code · README · architecture diagram · real 
 | 1 | [Local Inference Server](./POC1-local-inference-server) | Serving basics, instrumentation, latency/throughput measurement | ✅ Done |
 | 2 | [Concurrent Requests](./POC2-concurrent-requests) | Throughput, concurrency, saturation, tail latency | ✅ Done |
 | 3 | [Streaming Inference](./POC3-streaming-inference) | TTFT, token streaming (SSE), perceived latency | ✅ Done |
-| 4 | LLM Gateway | Routing, rate limiting, multi-model serving | ⬜ Planned |
+| 4 | [LLM Gateway](./POC4-llm-gateway) | API-key auth, model routing, rate limiting, metrics | ✅ Done |
 | 5 | Response Cache | Exact-match caching, cost reduction | ⬜ Planned |
 | 6 | Prefix Cache | KV-cache reuse, RadixAttention idea | ⬜ Planned |
 | 7 | KV Cache Visualizer | Making GPU memory visible | ⬜ Planned |
@@ -71,7 +71,12 @@ inference-poc-learnings/
 │   ├── benchmark.py
 │   ├── requirements.txt
 │   └── README.md
-└── (POC4, POC5, ... added as built)
+├── POC4-llm-gateway/               ← auth, routing, rate limit, metrics
+│   ├── gateway.py
+│   ├── demo.py
+│   ├── requirements.txt
+│   └── README.md
+└── (POC5, POC6, ... added as built)
 ```
 
 Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchmark.
@@ -93,6 +98,10 @@ Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchma
 **POC3 — streaming:**
 - Added a streaming endpoint (Server-Sent Events, OpenAI-style `data:` format) that emits each token as the model writes it.
 - **Cut Time-To-First-Token from 2.94s → 0.31s (~9.5× sooner)** while total time stayed ~3s — proving streaming improves *perceived* latency for free, even when raw speed can't change.
+
+**POC4 — gateway:**
+- Built an API-gateway in front of the model: **Bearer-key auth, model-alias routing, tier-based authorization, per-key sliding-window rate limiting, and usage metrics**.
+- Verified all paths (401 / 403 / 404 / 429 / 200) and measured **gateway overhead at ~0.05 ms** — production plumbing that's invisible in the latency budget.
 
 ---
 
