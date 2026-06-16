@@ -17,7 +17,7 @@ Every POC ships with: **runnable code · README · architecture diagram · real 
 | 3 | [Streaming Inference](./POC3-streaming-inference) | TTFT, token streaming (SSE), perceived latency | ✅ Done |
 | 4 | [LLM Gateway](./POC4-llm-gateway) | API-key auth, model routing, rate limiting, metrics | ✅ Done |
 | 5 | [Response Cache](./POC5-response-cache) | Exact-match caching, cache-hit speedup, cost reduction | ✅ Done |
-| 6 | Prefix Cache | KV-cache reuse, RadixAttention idea | ⬜ Planned |
+| 6 | [Prefix Cache](./POC6-prefix-cache) | KV-cache reuse for shared prefixes, RadixAttention idea | ✅ Done |
 | 7 | KV Cache Visualizer | Making GPU memory visible | ⬜ Planned |
 | 8 | Mini vLLM | Continuous batching + paged KV from scratch | ⬜ Planned |
 | 9 | Benchmark Lab | Standardized load testing across engines | ⬜ Planned |
@@ -81,7 +81,13 @@ inference-poc-learnings/
 │   ├── benchmark.py
 │   ├── requirements.txt
 │   └── README.md
-└── (POC6, POC7, ... added as built)
+├── POC6-prefix-cache/              ← shared-prefix KV reuse + radix tree
+│   ├── radix_tree.py
+│   ├── prefix_server.py
+│   ├── benchmark.py
+│   ├── requirements.txt
+│   └── README.md
+└── (POC7, POC8, ... added as built)
 ```
 
 Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchmark.
@@ -111,6 +117,10 @@ Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchma
 **POC5 — response cache:**
 - Built a read-through cache keyed by a SHA-256 of the request; forced `temperature=0` so caching is semantically correct.
 - **Cache hit ~616× faster** (~4 ms vs ~2.6 s) and a repeat-heavy workload hit **62.5%, saving ~13 s of ~21 s**. Documented when caching an LLM is safe vs unsafe.
+
+**POC6 — prefix cache:**
+- Built the **radix/prefix-tree** that detects shared prompt prefixes (the RadixAttention idea) and a server that measures the real KV-cache reuse.
+- **Prefill on a 438-token shared system prompt dropped from 1327 ms (cold) → ~130 ms (warm), a ~10× speedup** — the win that makes system-prompt / few-shot / agent workloads cheap.
 
 ---
 
