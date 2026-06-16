@@ -19,7 +19,7 @@ Every POC ships with: **runnable code · README · architecture diagram · real 
 | 5 | [Response Cache](./POC5-response-cache) | Exact-match caching, cache-hit speedup, cost reduction | ✅ Done |
 | 6 | [Prefix Cache](./POC6-prefix-cache) | KV-cache reuse for shared prefixes, RadixAttention idea | ✅ Done |
 | 7 | [KV Cache Observer](./POC7-kv-cache-observer) | Proving the KV cache works via prefill-vs-decode | ✅ Done |
-| 8 | Mini vLLM | Continuous batching + paged KV from scratch | ⬜ Planned |
+| 8 | [Mini vLLM](./POC8-mini-vllm) | Own KV cache + continuous batching (real model) | ✅ Done |
 | 9 | Benchmark Lab | Standardized load testing across engines | ⬜ Planned |
 | + | Quantization · RAG serving · GPU deploy · vLLM prod · Multi-GPU · TensorRT/SGLang · Triton kernels · FlashAttention | Advanced infra | ⬜ Backlog |
 
@@ -42,6 +42,7 @@ Concept write-ups (mentor-style, with diagrams and production connections). Read
 | [09 — Streaming & TTFT](./notes/09-streaming-and-ttft.md) | Beginner guide: why streaming feels ~9x faster (Time To First Token) |
 | [10 — Glossary](./notes/10-glossary.md) | Plain-English definitions of inference terms, mapped to backend ideas |
 | [11 — Proving the KV Cache](./notes/11-proving-kv-cache.md) | How POC7 turns "the KV cache exists" into a measured fact |
+| [12 — Continuous Batching](./notes/12-continuous-batching.md) | The vLLM core idea: keep the batch full every token (POC8) |
 
 ---
 
@@ -90,8 +91,14 @@ inference-poc-learnings/
 │   └── README.md
 ├── POC7-kv-cache-observer/         ← prove KV cache via prefill-vs-decode
 │   ├── kv_observer.py
+│   ├── requirements.txt
 │   └── README.md
-└── (POC8, POC9, ... added as built)
+├── POC8-mini-vllm/                 ← own KV cache + continuous batching (torch)
+│   ├── kv_cache_demo.py
+│   ├── mini_engine.py
+│   ├── requirements.txt
+│   └── README.md
+└── (POC9, POC10, ... added as built)
 ```
 
 Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchmark.
@@ -129,6 +136,10 @@ Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchma
 **POC7 — KV cache observer:**
 - Designed an experiment to **prove the KV cache works** without engine internals: sweep prompt length, keep output fixed, watch the fingerprint.
 - A **41× longer prompt made prefill ~32× slower but decode speed stayed flat (94% kept)** — only possible if decode reuses the cache. Also surfaced prefill (compute-bound, ~600 tok/s) vs decode (memory-bound, ~30 tok/s).
+
+**POC8 — mini-vLLM (capstone):**
+- Dropped Ollama and ran a real model (distilgpt2, PyTorch + transformers) to **own the KV cache and the batching loop** ourselves.
+- Manual KV-cache decode loop = **3.4× faster** than recompute; a from-scratch **continuous-batching scheduler** (admission + eviction over a shared cache) scaled throughput **1× → 4.5×** with batch size — the mechanism behind vLLM/TGI, with PagedAttention named as the next step.
 
 ---
 
