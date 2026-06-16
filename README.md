@@ -16,7 +16,7 @@ Every POC ships with: **runnable code · README · architecture diagram · real 
 | 2 | [Concurrent Requests](./POC2-concurrent-requests) | Throughput, concurrency, saturation, tail latency | ✅ Done |
 | 3 | [Streaming Inference](./POC3-streaming-inference) | TTFT, token streaming (SSE), perceived latency | ✅ Done |
 | 4 | [LLM Gateway](./POC4-llm-gateway) | API-key auth, model routing, rate limiting, metrics | ✅ Done |
-| 5 | Response Cache | Exact-match caching, cost reduction | ⬜ Planned |
+| 5 | [Response Cache](./POC5-response-cache) | Exact-match caching, cache-hit speedup, cost reduction | ✅ Done |
 | 6 | Prefix Cache | KV-cache reuse, RadixAttention idea | ⬜ Planned |
 | 7 | KV Cache Visualizer | Making GPU memory visible | ⬜ Planned |
 | 8 | Mini vLLM | Continuous batching + paged KV from scratch | ⬜ Planned |
@@ -76,7 +76,12 @@ inference-poc-learnings/
 │   ├── demo.py
 │   ├── requirements.txt
 │   └── README.md
-└── (POC5, POC6, ... added as built)
+├── POC5-response-cache/            ← exact-match response cache (read-through)
+│   ├── cache_server.py
+│   ├── benchmark.py
+│   ├── requirements.txt
+│   └── README.md
+└── (POC6, POC7, ... added as built)
 ```
 
 Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchmark.
@@ -102,6 +107,10 @@ Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchma
 **POC4 — gateway:**
 - Built an API-gateway in front of the model: **Bearer-key auth, model-alias routing, tier-based authorization, per-key sliding-window rate limiting, and usage metrics**.
 - Verified all paths (401 / 403 / 404 / 429 / 200) and measured **gateway overhead at ~0.05 ms** — production plumbing that's invisible in the latency budget.
+
+**POC5 — response cache:**
+- Built a read-through cache keyed by a SHA-256 of the request; forced `temperature=0` so caching is semantically correct.
+- **Cache hit ~616× faster** (~4 ms vs ~2.6 s) and a repeat-heavy workload hit **62.5%, saving ~13 s of ~21 s**. Documented when caching an LLM is safe vs unsafe.
 
 ---
 
