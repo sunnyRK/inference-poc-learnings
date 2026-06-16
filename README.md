@@ -14,7 +14,7 @@ Every POC ships with: **runnable code · README · architecture diagram · real 
 |---|-----|---------|--------|
 | 1 | [Local Inference Server](./POC1-local-inference-server) | Serving basics, instrumentation, latency/throughput measurement | ✅ Done |
 | 2 | [Concurrent Requests](./POC2-concurrent-requests) | Throughput, concurrency, saturation, tail latency | ✅ Done |
-| 3 | Streaming Inference | TTFT, token streaming, perceived latency | ⬜ Planned |
+| 3 | [Streaming Inference](./POC3-streaming-inference) | TTFT, token streaming (SSE), perceived latency | ✅ Done |
 | 4 | LLM Gateway | Routing, rate limiting, multi-model serving | ⬜ Planned |
 | 5 | Response Cache | Exact-match caching, cost reduction | ⬜ Planned |
 | 6 | Prefix Cache | KV-cache reuse, RadixAttention idea | ⬜ Planned |
@@ -39,6 +39,7 @@ Concept write-ups (mentor-style, with diagrams and production connections). Read
 | [06 — POC1 Learnings](./notes/06-poc1-learnings.md) | Real M4 numbers: cold start, decode ceiling, latency decomposition |
 | [07 — POC2 Learnings](./notes/07-poc2-learnings.md) | Concurrency results: flat throughput, linear latency, tail blowup |
 | [08 — Understanding the Numbers](./notes/08-understanding-the-numbers.md) | Beginner guide: latency, throughput, p50/p95/p99 — with simple math |
+| [09 — Streaming & TTFT](./notes/09-streaming-and-ttft.md) | Beginner guide: why streaming feels ~9x faster (Time To First Token) |
 
 ---
 
@@ -64,7 +65,12 @@ inference-poc-learnings/
 │   ├── load_test.py
 │   ├── requirements.txt
 │   └── README.md
-└── (POC3, POC4, ... added as built)
+├── POC3-streaming-inference/       ← token streaming (SSE), TTFT
+│   ├── stream_server.py
+│   ├── benchmark.py
+│   ├── requirements.txt
+│   └── README.md
+└── (POC4, POC5, ... added as built)
 ```
 
 Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchmark.
@@ -82,6 +88,10 @@ Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchma
 - Built a threaded load generator and swept concurrency 1→8, reporting throughput + p50/p95/p99.
 - **Measured the failure mode of naive serving:** throughput stayed **flat (~29 tok/s)** while latency climbed **linearly** (p50 2.7s → 11.1s) and the **tail blew up** (p99 18.4s at C=8).
 - Pre-registered 5 hypotheses before coding and scored them against reality — proving *why* continuous-batching engines (vLLM) exist, with my own numbers.
+
+**POC3 — streaming:**
+- Added a streaming endpoint (Server-Sent Events, OpenAI-style `data:` format) that emits each token as the model writes it.
+- **Cut Time-To-First-Token from 2.94s → 0.31s (~9.5× sooner)** while total time stayed ~3s — proving streaming improves *perceived* latency for free, even when raw speed can't change.
 
 ---
 
