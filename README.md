@@ -18,7 +18,7 @@ Every POC ships with: **runnable code · README · architecture diagram · real 
 | 4 | [LLM Gateway](./POC4-llm-gateway) | API-key auth, model routing, rate limiting, metrics | ✅ Done |
 | 5 | [Response Cache](./POC5-response-cache) | Exact-match caching, cache-hit speedup, cost reduction | ✅ Done |
 | 6 | [Prefix Cache](./POC6-prefix-cache) | KV-cache reuse for shared prefixes, RadixAttention idea | ✅ Done |
-| 7 | KV Cache Visualizer | Making GPU memory visible | ⬜ Planned |
+| 7 | [KV Cache Observer](./POC7-kv-cache-observer) | Proving the KV cache works via prefill-vs-decode | ✅ Done |
 | 8 | Mini vLLM | Continuous batching + paged KV from scratch | ⬜ Planned |
 | 9 | Benchmark Lab | Standardized load testing across engines | ⬜ Planned |
 | + | Quantization · RAG serving · GPU deploy · vLLM prod · Multi-GPU · TensorRT/SGLang · Triton kernels · FlashAttention | Advanced infra | ⬜ Backlog |
@@ -41,6 +41,7 @@ Concept write-ups (mentor-style, with diagrams and production connections). Read
 | [08 — Understanding the Numbers](./notes/08-understanding-the-numbers.md) | Beginner guide: latency, throughput, p50/p95/p99 — with simple math |
 | [09 — Streaming & TTFT](./notes/09-streaming-and-ttft.md) | Beginner guide: why streaming feels ~9x faster (Time To First Token) |
 | [10 — Glossary](./notes/10-glossary.md) | Plain-English definitions of inference terms, mapped to backend ideas |
+| [11 — Proving the KV Cache](./notes/11-proving-kv-cache.md) | How POC7 turns "the KV cache exists" into a measured fact |
 
 ---
 
@@ -87,7 +88,10 @@ inference-poc-learnings/
 │   ├── benchmark.py
 │   ├── requirements.txt
 │   └── README.md
-└── (POC7, POC8, ... added as built)
+├── POC7-kv-cache-observer/         ← prove KV cache via prefill-vs-decode
+│   ├── kv_observer.py
+│   └── README.md
+└── (POC8, POC9, ... added as built)
 ```
 
 Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchmark.
@@ -121,6 +125,10 @@ Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchma
 **POC6 — prefix cache:**
 - Built the **radix/prefix-tree** that detects shared prompt prefixes (the RadixAttention idea) and a server that measures the real KV-cache reuse.
 - **Prefill on a 438-token shared system prompt dropped from 1327 ms (cold) → ~130 ms (warm), a ~10× speedup** — the win that makes system-prompt / few-shot / agent workloads cheap.
+
+**POC7 — KV cache observer:**
+- Designed an experiment to **prove the KV cache works** without engine internals: sweep prompt length, keep output fixed, watch the fingerprint.
+- A **41× longer prompt made prefill ~32× slower but decode speed stayed flat (94% kept)** — only possible if decode reuses the cache. Also surfaced prefill (compute-bound, ~600 tok/s) vs decode (memory-bound, ~30 tok/s).
 
 ---
 
