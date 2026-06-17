@@ -23,6 +23,8 @@ Every POC ships with: **runnable code · README · architecture diagram · real 
 | 9 | Benchmark Lab | Standardized load testing across engines | ⬜ Planned |
 | + | Quantization · RAG serving · GPU deploy · vLLM prod · Multi-GPU · TensorRT/SGLang · Triton kernels · FlashAttention | Advanced infra | ⬜ Backlog |
 
+👉 Full 20-POC plan with status: **[ROADMAP.md](./ROADMAP.md)**
+
 ---
 
 ## 📚 Theory notes
