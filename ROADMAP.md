@@ -1,7 +1,7 @@
 # Roadmap — 20 Inference POCs
 
 Building inference engineering from first principles, one POC at a time.
-Status: 8 done, 12 to go.
+Status: 9 done, 11 to go.
 
 ---
 
@@ -39,9 +39,9 @@ Throughput scaled up to 4.5x with batch size — the core trick behind vLLM.
 
 ---
 
-POC9 — Benchmark Lab  [PENDING]
+POC9 — Benchmark Lab  [DONE]
 One tool to load-test any setup and save the numbers (latency, tokens/sec, p95).
-So you can compare engines fairly with real charts instead of guesses.
+Compares configs with saved JSON + ASCII charts; re-confirmed concurrency and streaming effects.
 
 POC10 — Quantization  [PENDING]
 Run the model in smaller number formats (16-bit to 8-bit to 4-bit) to use less memory.
@@ -89,5 +89,5 @@ Learn the most important speedup in modern attention — the deep end.
 
 ---
 
-Next up: POC9 (Benchmark Lab) and POC10 (Quantization) — both run on the laptop.
+Next up: POC10 (Quantization) — runs on the laptop.
 The GPU ones (POC12, POC13, POC14) need a cloud GPU when ready.

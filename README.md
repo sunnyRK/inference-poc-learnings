@@ -20,7 +20,7 @@ Every POC ships with: **runnable code · README · architecture diagram · real 
 | 6 | [Prefix Cache](./POC6-prefix-cache) | KV-cache reuse for shared prefixes, RadixAttention idea | ✅ Done |
 | 7 | [KV Cache Observer](./POC7-kv-cache-observer) | Proving the KV cache works via prefill-vs-decode | ✅ Done |
 | 8 | [Mini vLLM](./POC8-mini-vllm) | Own KV cache + continuous batching (real model) | ✅ Done |
-| 9 | Benchmark Lab | Standardized load testing across engines | ⬜ Planned |
+| 9 | [Benchmark Lab](./POC9-benchmark-lab) | Reusable load tester, saved results, comparison | ✅ Done |
 | + | Quantization · RAG serving · GPU deploy · vLLM prod · Multi-GPU · TensorRT/SGLang · Triton kernels · FlashAttention | Advanced infra | ⬜ Backlog |
 
 👉 Full 20-POC plan with status: **[ROADMAP.md](./ROADMAP.md)**
@@ -100,7 +100,13 @@ inference-poc-learnings/
 │   ├── mini_engine.py
 │   ├── requirements.txt
 │   └── README.md
-└── (POC9, POC10, ... added as built)
+├── POC9-benchmark-lab/             ← reusable load tester + saved results
+│   ├── bench.py
+│   ├── compare.py
+│   ├── results/*.json
+│   ├── requirements.txt
+│   └── README.md
+└── (POC10, POC11, ... added as built)
 ```
 
 Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchmark.
@@ -142,6 +148,10 @@ Each `POCx-*/` folder is self-contained: its own README, code, deps, and benchma
 **POC8 — mini-vLLM (capstone):**
 - Dropped Ollama and ran a real model (distilgpt2, PyTorch + transformers) to **own the KV cache and the batching loop** ourselves.
 - Manual KV-cache decode loop = **3.4× faster** than recompute; a from-scratch **continuous-batching scheduler** (admission + eviction over a shared cache) scaled throughput **1× → 4.5×** with batch size — the mechanism behind vLLM/TGI, with PagedAttention named as the next step.
+
+**POC9 — benchmark lab:**
+- Built a reusable load tester (concurrency, streaming, p50/p95/p99, TTFT) that **saves each run to JSON** and prints a comparison table + ASCII charts.
+- Re-confirmed the whole series in one tool: concurrency 1→4 tripled latency without raising throughput, while streaming cut TTFT 6.5s→4.8s under load.
 
 ---
 
