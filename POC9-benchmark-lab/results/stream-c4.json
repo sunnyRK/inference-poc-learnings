@@ -1,0 +1,22 @@
+{
+  "label": "stream-c4",
+  "config": {
+    "model": "qwen2.5:3b",
+    "concurrency": 4,
+    "requests": 8,
+    "max_tokens": 64,
+    "streaming": true
+  },
+  "metrics": {
+    "ok": 8,
+    "failed": 0,
+    "wall_s": 15.843,
+    "req_per_s": 0.5,
+    "tokens_per_s": 27.9,
+    "p50_s": 7.714,
+    "p95_s": 9.094,
+    "p99_s": 9.144,
+    "ttft_mean_s": 4.802
+  },
+  "when": "2026-06-18 11:25:41"
+}

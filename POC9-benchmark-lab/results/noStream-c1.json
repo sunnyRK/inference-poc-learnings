@@ -1,0 +1,22 @@
+{
+  "label": "noStream-c1",
+  "config": {
+    "model": "qwen2.5:3b",
+    "concurrency": 1,
+    "requests": 8,
+    "max_tokens": 64,
+    "streaming": false
+  },
+  "metrics": {
+    "ok": 8,
+    "failed": 0,
+    "wall_s": 17.132,
+    "req_per_s": 0.47,
+    "tokens_per_s": 25.8,
+    "p50_s": 2.361,
+    "p95_s": 2.787,
+    "p99_s": 2.862,
+    "ttft_mean_s": 2.141
+  },
+  "when": "2026-06-18 11:25:08"
+}
